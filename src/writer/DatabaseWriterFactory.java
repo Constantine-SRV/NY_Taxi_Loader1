@@ -2,7 +2,7 @@ package writer;
 
 import config.AppConfig;
 import config.DatabaseType;
-import logging.LogService;
+import Logging.LogService;
 
 import java.sql.SQLException;
 

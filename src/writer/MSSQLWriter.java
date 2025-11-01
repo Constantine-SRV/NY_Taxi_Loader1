@@ -1,7 +1,7 @@
 package writer;
 
 import config.AppConfig;
-import logging.LogService;
+import Logging.LogService;
 import model.TaxiTrip;
 
 import java.sql.*;

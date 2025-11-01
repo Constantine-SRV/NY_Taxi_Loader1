@@ -107,13 +107,13 @@ public final class AppConfig {
      * - PostgreSQL: 5000-10000
      * - MS SQL Server: 1000-5000
      */
-    public static final int BATCH_SIZE = 10000;
+    public static final int BATCH_SIZE = 1000;
 
     /** Лимит записей для тестовой загрузки (0 = все) */
     public static final int TEST_LIMIT = 0;
 
     /** Интервал логирования прогресса (каждые N записей) */
-    public static final int LOG_INTERVAL = 100_000;
+    public static final int LOG_INTERVAL = 500_000;
 
     // ===== Table Settings =====
 
@@ -129,10 +129,8 @@ public final class AppConfig {
      * Количество потоков для параллельной загрузки.
      * Установите 1 для однопоточного режима.
      */
-    public static final int THREAD_COUNT = 2;
+    public static final int THREAD_COUNT = 8;
 
-    /** Connection pool size (резерв) */
-    public static final int CONNECTION_POOL_SIZE = 5;
 
     // ===== Utility Methods =====
 

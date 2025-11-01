@@ -1,5 +1,5 @@
 import config.AppConfig;
-import logging.LogService;
+import Logging.LogService;
 import model.TaxiTrip;
 import reader.ParquetTaxiReader;
 import writer.DatabaseWriter;

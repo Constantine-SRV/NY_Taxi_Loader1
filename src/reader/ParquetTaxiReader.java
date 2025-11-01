@@ -1,6 +1,6 @@
 package reader;
 
-import logging.LogService;
+import Logging.LogService;
 import model.TaxiTrip;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
