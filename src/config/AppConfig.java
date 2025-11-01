@@ -17,7 +17,7 @@ public final class AppConfig {
      * Выбор базы данных для загрузки.
      * Измените это значение для переключения между базами данных.
      */
-    public static final DatabaseType DATABASE_TYPE = DatabaseType.OCEANBASE;
+    public static final DatabaseType DATABASE_TYPE = DatabaseType.POSTGRESQL;
 
     // ===== OceanBase Connection =====
 
@@ -50,13 +50,13 @@ public final class AppConfig {
     // ===== PostgreSQL Connection =====
 
     /** PostgreSQL JDBC URL */
-    public static final String POSTGRESQL_URL = "jdbc:postgresql://localhost:5432/taxidb";
+    public static final String POSTGRESQL_URL = "jdbc:postgresql://192.168.55.211:5432/testdb";
 
     /** PostgreSQL пользователь */
-    public static final String POSTGRESQL_USER = "postgres";
+    public static final String POSTGRESQL_USER = "testdbuser";
 
     /** PostgreSQL пароль */
-    public static final String POSTGRESQL_PASSWORD = "postgres";
+    public static final String POSTGRESQL_PASSWORD = "qaz123";
 
     /** Параметры подключения для PostgreSQL оптимизации */
     public static final String POSTGRESQL_URL_FULL = POSTGRESQL_URL

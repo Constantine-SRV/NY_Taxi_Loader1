@@ -26,6 +26,11 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
         LogService.info("=== NYC Taxi Parquet to Database Loader ===");
         LogService.infof("Version: 4.0 - Universal loader (OceanBase/PostgreSQL/MS SQL Server)");
         LogService.infof("Target Database: %s", DatabaseWriterFactory.getCurrentDatabaseName());
@@ -34,6 +39,8 @@ public class Main {
         // Вывести конфигурацию
         AppConfig.printConfig();
         LogService.info("");
+
+
 
         try {
             // Проверить подключение к БД
