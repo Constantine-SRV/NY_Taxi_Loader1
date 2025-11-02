@@ -108,6 +108,35 @@ public final class AppConfig {
         return new File(fullPath).getName();
     }
 
+    // === JDBC compatibility fields ===
+    public static String JDBC_URL;
+    public static String JDBC_USER;
+    public static String JDBC_PASSWORD;
+
+    // === Compatibility getters (used by old writer classes) ===
+    public static String getPostgreSQLUrl() {
+        return POSTGRESQL_URL;
+    }
+
+    public static String getMSSQLUrl() {
+        return MSSQL_URL;
+    }
+
+    public static String getOceanBaseUrl() {
+        return OCEANBASE_URL;
+    }
+
+    public static String getJdbcUrl() {
+        if (DATABASE_TYPE == null) return null;
+        switch (DATABASE_TYPE) {
+            case POSTGRESQL: return POSTGRESQL_URL;
+            case MSSQL:      return MSSQL_URL;
+            case OCEANBASE:  return OCEANBASE_URL;
+            default:         return null;
+        }
+    }
+
+
     public static void printConfig() {
         System.out.println("=== Application Configuration ===");
         System.out.println("Database Type: " + (DATABASE_TYPE != null ? DATABASE_TYPE.getDisplayName() : "null"));
