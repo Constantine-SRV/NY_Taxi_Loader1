@@ -17,7 +17,7 @@ public final class AppConfig {
      * Выбор базы данных для загрузки.
      * Измените это значение для переключения между базами данных.
      */
-    public static final DatabaseType DATABASE_TYPE = DatabaseType.POSTGRESQL;
+    public static final DatabaseType DATABASE_TYPE = DatabaseType.MSSQL;
 
     // ===== OceanBase Connection =====
 
@@ -81,13 +81,46 @@ public final class AppConfig {
 
     /** Параметры подключения для MSSQL оптимизации */
     public static final String MSSQL_URL_FULL = MSSQL_URL
-         //   + ";useBulkCopyForBatchInsert=true"       // Использовать bulk copy
+           + ";useBulkCopyForBatchInsert=true"       // Использовать bulk copy
             + ";sendStringParametersAsUnicode=false"  // Производительность для ASCII
             + ";loginTimeout=10"                      // Login timeout 10 сек
             + ";socketTimeout=60000"                  // Socket timeout 60 сек
             + ";applicationName=TaxiLoader";          // Имя приложения
 
+    // ===== MongoDB Connection =====
+
+    /**
+     * Настройки подключения MongoDB.
+     * Используется MongoDBWriter при DATABASE_TYPE = MONGODB.
+     */
+    public static final boolean MONGO_USE_SSL = false;   // false для дома, true для работы
+
+    /** MongoDB пользователь */
+    public static final String MONGO_USERNAME = "mongoAdmin";
+
+    /** MongoDB пароль */
+    public static final String MONGO_PASSWORD = "qaz123";
+
+    /** MongoDB authSource (база аутентификации) */
+    public static final String MONGO_AUTH_SOURCE = "admin";
+
+    /** Хосты кластера MongoDB (host:port) */
+    public static final List<String> MONGO_HOSTS = java.util.Arrays.asList(
+            "192.168.55.30:27017",
+            "192.168.55.40:27017",
+            "192.168.0.60:27017"
+    );
+
+    /** Имя базы данных MongoDB */
+    public static final String MONGO_DATABASE = "testdb";
+
+    /** Имя коллекции MongoDB */
+    public static final String MONGO_COLLECTION = "taxi_trips";
+
+
+
     // ===== Data Source =====
+
 
     /** Каталог с Parquet файлами */
     public static final String PARQUET_DIR = "E:/NYCTaxi/";
@@ -107,7 +140,7 @@ public final class AppConfig {
      * - PostgreSQL: 5000-10000
      * - MS SQL Server: 1000-5000
      */
-    public static final int BATCH_SIZE = 1000;
+    public static final int BATCH_SIZE = 10_000;
 
     /** Лимит записей для тестовой загрузки (0 = все) */
     public static final int TEST_LIMIT = 0;
@@ -253,6 +286,13 @@ public final class AppConfig {
             case MSSQL:
                 System.out.println("JDBC URL:        " + MSSQL_URL);
                 System.out.println("JDBC User:       " + MSSQL_USER);
+                break;
+            case MONGODB:
+                System.out.println("Hosts:           " + String.join(", ", MONGO_HOSTS));
+                System.out.println("User:            " + MONGO_USERNAME);
+                System.out.println("Database:        " + MONGO_DATABASE);
+                System.out.println("Collection:      " + MONGO_COLLECTION);
+                System.out.println("SSL:             " + (MONGO_USE_SSL ? "enabled" : "disabled"));
                 break;
         }
 

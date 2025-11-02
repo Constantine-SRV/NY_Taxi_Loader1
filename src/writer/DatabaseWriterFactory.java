@@ -37,6 +37,8 @@ public class DatabaseWriterFactory {
             case MSSQL:
                 return new MSSQLWriter(taskId);
 
+            case MONGODB:
+                return new MongoDBWriter(taskId);
             default:
                 throw new IllegalStateException("Unsupported database type: " + dbType);
         }

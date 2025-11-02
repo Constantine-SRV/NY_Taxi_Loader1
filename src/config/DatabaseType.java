@@ -6,6 +6,7 @@ package config;
 public enum DatabaseType {
     OCEANBASE("OceanBase"),
     POSTGRESQL("PostgreSQL"),
+    MONGODB("MongoDB"),
     MSSQL("Microsoft SQL Server");
 
     private final String displayName;

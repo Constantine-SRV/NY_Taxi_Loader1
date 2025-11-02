@@ -33,6 +33,7 @@
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/woodstox-core-6.5.1.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/zstd-jni-1.5.5-11.jar" path-in-jar="/" />
       <element id="library" level="project" name="lib" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/mongo-java-driver-3.12.14.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>
