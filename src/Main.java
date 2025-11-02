@@ -31,6 +31,9 @@ public class Main {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+        String cfgFile = args.length > 0 ? args[0] : "configUploader.xml";
+        AppConfigReader.read(cfgFile);
+
         LogService.info("=== NYC Taxi Parquet to Database Loader ===");
         LogService.infof("Version: 4.0 - Universal loader (OceanBase/PostgreSQL/MS SQL Server)");
         LogService.infof("Target Database: %s", DatabaseWriterFactory.getCurrentDatabaseName());

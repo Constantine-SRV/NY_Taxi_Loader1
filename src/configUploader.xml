@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AppConfig>
+    <!-- Тип БД: OCEANBASE | POSTGRESQL | MSSQL | MONGODB -->
+    <DATABASE_TYPE>MSSQL</DATABASE_TYPE>
+
+    <!-- OceanBase -->
+    <OCEANBASE_URL>jdbc:mysql://192.168.55.201:2883/testdb</OCEANBASE_URL>
+    <OCEANBASE_USER>root@app_tenant</OCEANBASE_USER>
+    <OCEANBASE_PASSWORD>Ob500200</OCEANBASE_PASSWORD>
+
+    <!-- PostgreSQL -->
+    <POSTGRESQL_URL>jdbc:postgresql://192.168.55.211:5432/testdb</POSTGRESQL_URL>
+    <POSTGRESQL_USER>testdbuser</POSTGRESQL_USER>
+    <POSTGRESQL_PASSWORD>qaz123</POSTGRESQL_PASSWORD>
+
+    <!-- MS SQL Server -->
+    <MSSQL_URL>jdbc:sqlserver://sqlupdate2019:1433;databaseName=testdb;encrypt=false</MSSQL_URL>
+    <MSSQL_USER>testdbuser</MSSQL_USER>
+    <MSSQL_PASSWORD>qaz123</MSSQL_PASSWORD>
+
+    <!-- MongoDB -->
+    <MONGO_USE_SSL>false</MONGO_USE_SSL>
+    <MONGO_USERNAME>mongoAdmin</MONGO_USERNAME>
+    <MONGO_PASSWORD>qaz123</MONGO_PASSWORD>
+    <MONGO_AUTH_SOURCE>admin</MONGO_AUTH_SOURCE>
+    <!-- список хостов через запятую/пробел/точку с запятой -->
+    <MONGO_HOSTS>192.168.55.30:27017, 192.168.55.40:27017, 192.168.0.60:27017</MONGO_HOSTS>
+    <MONGO_DATABASE>testdb</MONGO_DATABASE>
+    <MONGO_COLLECTION>taxi_trips</MONGO_COLLECTION>
+
+    <!-- Источник данных -->
+    <PARQUET_DIR>E:/NYCTaxi/</PARQUET_DIR>
+    <FIRST_FILE>yellow_tripdata_2019-02.parquet</FIRST_FILE>
+
+    <!-- Пакеты/лимиты/логи -->
+    <BATCH_SIZE>10000</BATCH_SIZE>
+    <TEST_LIMIT>0</TEST_LIMIT>
+    <LOG_INTERVAL>500000</LOG_INTERVAL>
+
+    <!-- Таблица и БД -->
+    <TABLE_NAME>taxi_trips1</TABLE_NAME>
+    <DATABASE_NAME>testdb</DATABASE_NAME>
+
+    <!-- Производительность -->
+    <THREAD_COUNT>8</THREAD_COUNT>
+</AppConfig>
