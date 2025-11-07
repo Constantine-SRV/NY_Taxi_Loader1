@@ -30,17 +30,15 @@ jobs:
           echo "=== Compiling Java sources ==="
           mkdir -p build/classes
           
-          # Получаем все JAR файлы из lib
           CLASSPATH=$(find lib -name "*.jar" | tr '\n' ':')
           echo "Classpath: $CLASSPATH"
           
-          # Компилируем все Java файлы
           find src -name "*.java" > sources.txt
           echo "Found $(wc -l < sources.txt) Java source files"
           
           javac -d build/classes -cp "$CLASSPATH" @sources.txt
           
-          echo "✓ Compilation completed!"
+          echo "Compilation completed"
 
       - name: Create Fat JAR with proper META-INF merging
         run: |
@@ -49,25 +47,20 @@ jobs:
           mkdir -p build/jar-temp
           cd build/jar-temp
           
-          # Копируем скомпилированные классы
           echo "Copying compiled classes..."
           cp -r ../classes/* .
           
-          # Создаем директорию для мержинга META-INF/services
           mkdir -p META-INF/services
           
-          # Извлекаем каждый JAR и мержим META-INF/services
           echo "Extracting and merging JARs..."
           for jar in ../../lib/*.jar; do
             jarname=$(basename "$jar")
             echo "Processing: $jarname"
             
-            # Создаем временную директорию для этого JAR
             tempdir=$(mktemp -d)
             cd "$tempdir"
             jar xf "$jar" 2>/dev/null || true
             
-            # Мержим META-INF/services файлы
             if [ -d "META-INF/services" ]; then
               for service in META-INF/services/*; do
                 if [ -f "$service" ]; then
@@ -78,17 +71,14 @@ jobs:
               done
             fi
             
-            # Удаляем META-INF перед копированием классов
             rm -rf META-INF
             
-            # Копируем все классы (кроме уже обработанных META-INF)
             cp -r . "$OLDPWD/" 2>/dev/null || true
             
             cd "$OLDPWD"
             rm -rf "$tempdir"
           done
           
-          # Удаляем дубликаты в META-INF/services файлах
           echo "Removing duplicates from service files..."
           for service in META-INF/services/*; do
             if [ -f "$service" ]; then
@@ -96,29 +86,21 @@ jobs:
             fi
           done
           
-          # Создаем MANIFEST
           echo "Creating MANIFEST..."
-          cat > MANIFEST.MF << EOF
-Manifest-Version: 1.0
-Main-Class: Main
-Created-By: GitHub Actions
-
-EOF
+          cat > MANIFEST.MF << 'EOF'
+          Manifest-Version: 1.0
+          Main-Class: Main
+          Created-By: GitHub Actions
           
-          # Создаем итоговый JAR
+          EOF
+          
           echo "Building final JAR..."
-          jar cmf MANIFEST.MF ../OBLoader1.jar *
+          jar cmf MANIFEST.MF ../OBLoader1.jar .
           
           cd ../..
           
-          # Показываем размер итогового JAR
           ls -lh build/OBLoader1.jar
-          echo "✓ Fat JAR created successfully!"
-          
-          # Показываем содержимое META-INF/services
-          echo ""
-          echo "=== META-INF/services contents ==="
-          unzip -l build/OBLoader1.jar | grep "META-INF/services"
+          echo "Fat JAR created successfully"
 
       - name: Copy JAR to root
         run: |
@@ -127,13 +109,6 @@ EOF
 
       - name: List root directory
         run: ls -la ./
-
-      - name: List JAR contents
-        run: |
-          echo "=== JAR file structure ==="
-          unzip -l OBLoader1.jar | head -50
-          echo "..."
-          echo "Total entries: $(unzip -l OBLoader1.jar | tail -1)"
 
       - name: Install GitHub CLI
         run: |
