@@ -2,6 +2,7 @@ package config;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
@@ -50,27 +51,45 @@ public final class AppConfigReader {
             AppConfig.MSSQL_USER = text(root, "MSSQL_USER");
             AppConfig.MSSQL_PASSWORD = text(root, "MSSQL_PASSWORD");
 
+            // === JDBC Compatibility (для OceanBaseWriter)
+            AppConfig.JDBC_URL = AppConfig.OCEANBASE_URL;
+            AppConfig.JDBC_USER = AppConfig.OCEANBASE_USER;
+            AppConfig.JDBC_PASSWORD = AppConfig.OCEANBASE_PASSWORD;
+
             // === MongoDB ===
-            AppConfig.MONGO_USE_SSL = parseBool(text(root, "MONGO_USE_SSL"));
-            AppConfig.MONGO_USERNAME = text(root, "MONGO_USERNAME");
-            AppConfig.MONGO_PASSWORD = text(root, "MONGO_PASSWORD");
-            AppConfig.MONGO_AUTH_SOURCE = text(root, "MONGO_AUTH_SOURCE");
-            AppConfig.MONGO_HOSTS = text(root, "MONGO_HOSTS");
-            AppConfig.MONGO_DATABASE = text(root, "MONGO_DATABASE");
+            AppConfig.MONGO_USE_SSL    = parseBool(text(root, "MONGO_USE_SSL"));
+            AppConfig.MONGO_USERNAME   = text(root, "MONGO_USERNAME");
+            AppConfig.MONGO_PASSWORD   = text(root, "MONGO_PASSWORD");
+            AppConfig.MONGO_AUTH_SOURCE= text(root, "MONGO_AUTH_SOURCE");
+            AppConfig.MONGO_DATABASE   = text(root, "MONGO_DATABASE");
             AppConfig.MONGO_COLLECTION = text(root, "MONGO_COLLECTION");
+
+            // Читаем список <MONGO_HOSTS><HOST>...</HOST>...</MONGO_HOSTS>
+            AppConfig.MONGO_HOSTS.clear();
+            NodeList hostsParent = root.getElementsByTagName("MONGO_HOSTS");
+            if (hostsParent.getLength() > 0) {
+                Element hostsElement = (Element) hostsParent.item(0);
+                NodeList hostNodes = hostsElement.getElementsByTagName("HOST");
+                for (int i = 0; i < hostNodes.getLength(); i++) {
+                    String host = hostNodes.item(i).getTextContent().trim();
+                    if (!host.isEmpty()) {
+                        AppConfig.MONGO_HOSTS.add(host);
+                    }
+                }
+            }
 
             // === Data source ===
             AppConfig.PARQUET_DIR = text(root, "PARQUET_DIR");
-            AppConfig.FIRST_FILE = text(root, "FIRST_FILE");
+            AppConfig.FIRST_FILE  = text(root, "FIRST_FILE");
 
             // === Пакеты/лимиты ===
-            AppConfig.BATCH_SIZE = parseInt(text(root, "BATCH_SIZE"));
-            AppConfig.TEST_LIMIT = parseInt(text(root, "TEST_LIMIT"));
+            AppConfig.BATCH_SIZE   = parseInt(text(root, "BATCH_SIZE"));
+            AppConfig.TEST_LIMIT   = parseInt(text(root, "TEST_LIMIT"));
             AppConfig.LOG_INTERVAL = parseInt(text(root, "LOG_INTERVAL"));
 
             // === Таблица / база ===
-            AppConfig.TABLE_NAME = text(root, "TABLE_NAME");
-            AppConfig.DATABASE_NAME = text(root, "DATABASE_NAME");
+            AppConfig.TABLE_NAME   = text(root, "TABLE_NAME");
+            AppConfig.DATABASE_NAME= text(root, "DATABASE_NAME");
 
             // === Потоки ===
             AppConfig.THREAD_COUNT = parseInt(text(root, "THREAD_COUNT"));

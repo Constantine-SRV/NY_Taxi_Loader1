@@ -2,7 +2,6 @@ package config;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -33,12 +32,17 @@ public final class AppConfig {
     public static String MSSQL_USER;
     public static String MSSQL_PASSWORD;
 
+    // === JDBC compatibility (used in OceanBaseWriter) ===
+    public static String JDBC_URL;
+    public static String JDBC_USER;
+    public static String JDBC_PASSWORD;
+
     // === MongoDB ===
     public static boolean MONGO_USE_SSL;
     public static String  MONGO_USERNAME;
     public static String  MONGO_PASSWORD;
     public static String  MONGO_AUTH_SOURCE;
-    public static String  MONGO_HOSTS;       // строка с хостами через запятую
+    public static List<String> MONGO_HOSTS = new ArrayList<>();
     public static String  MONGO_DATABASE;
     public static String  MONGO_COLLECTION;
 
@@ -63,13 +67,7 @@ public final class AppConfig {
     // ---------------------------------------------------------------------
 
     public static List<String> getMongoHostsList() {
-        if (MONGO_HOSTS == null || MONGO_HOSTS.isBlank()) return new ArrayList<>();
-        String[] parts = MONGO_HOSTS.split("[,;\\s]+");
-        List<String> list = new ArrayList<>();
-        for (String p : parts) {
-            if (!p.isBlank()) list.add(p.trim());
-        }
-        return list;
+        return MONGO_HOSTS;
     }
 
     public static List<String> getAllParquetFiles() {
@@ -108,11 +106,6 @@ public final class AppConfig {
         return new File(fullPath).getName();
     }
 
-    // === JDBC compatibility fields ===
-    public static String JDBC_URL;
-    public static String JDBC_USER;
-    public static String JDBC_PASSWORD;
-
     // === Compatibility getters (used by old writer classes) ===
     public static String getPostgreSQLUrl() {
         return POSTGRESQL_URL;
@@ -136,7 +129,6 @@ public final class AppConfig {
         }
     }
 
-
     public static void printConfig() {
         System.out.println("=== Application Configuration ===");
         System.out.println("Database Type: " + (DATABASE_TYPE != null ? DATABASE_TYPE.getDisplayName() : "null"));
@@ -154,7 +146,7 @@ public final class AppConfig {
                 System.out.println("User: " + MSSQL_USER);
                 break;
             case MONGODB:
-                System.out.println("Hosts: " + MONGO_HOSTS);
+                System.out.println("Hosts: " + String.join(", ", MONGO_HOSTS));
                 System.out.println("User: " + MONGO_USERNAME);
                 System.out.println("Database: " + MONGO_DATABASE);
                 System.out.println("Collection: " + MONGO_COLLECTION);
