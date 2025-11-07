@@ -31,81 +31,66 @@ jobs:
           mkdir -p build/classes
           
           CLASSPATH=$(find lib -name "*.jar" | tr '\n' ':')
-          echo "Classpath: $CLASSPATH"
           
           find src -name "*.java" > sources.txt
-          echo "Found $(wc -l < sources.txt) Java source files"
-          
           javac -d build/classes -cp "$CLASSPATH" @sources.txt
           
           echo "Compilation completed"
 
-      - name: Create Fat JAR with proper META-INF merging
+      - name: Extract all JAR libraries
         run: |
-          echo "=== Creating Fat JAR with all dependencies ==="
+          echo "=== Extracting all JAR libraries ==="
+          mkdir -p build/extracted
+          cd build/extracted
           
-          mkdir -p build/jar-temp
-          cd build/jar-temp
-          
-          echo "Copying compiled classes..."
-          cp -r ../classes/* .
-          
-          mkdir -p META-INF/services
-          
-          echo "Extracting and merging JARs..."
           for jar in ../../lib/*.jar; do
-            jarname=$(basename "$jar")
-            echo "Processing: $jarname"
-            
-            tempdir=$(mktemp -d)
-            cd "$tempdir"
-            jar xf "$jar" 2>/dev/null || true
-            
-            if [ -d "META-INF/services" ]; then
-              for service in META-INF/services/*; do
-                if [ -f "$service" ]; then
-                  servicename=$(basename "$service")
-                  echo "  Merging service: $servicename"
-                  cat "$service" >> "$OLDPWD/META-INF/services/$servicename"
-                fi
-              done
-            fi
-            
-            rm -rf META-INF
-            
-            cp -r . "$OLDPWD/" 2>/dev/null || true
-            
-            cd "$OLDPWD"
-            rm -rf "$tempdir"
+            echo "Extracting: $(basename $jar)"
+            jar xf "$jar"
           done
           
-          echo "Removing duplicates from service files..."
-          for service in META-INF/services/*; do
-            if [ -f "$service" ]; then
-              sort -u "$service" -o "$service"
-            fi
-          done
+          echo "All JARs extracted"
+          du -sh .
+
+      - name: Merge META-INF services
+        run: |
+          echo "=== Merging META-INF/services files ==="
+          cd build/extracted
           
-          echo "Creating MANIFEST..."
+          if [ -d "META-INF/services" ]; then
+            for service in META-INF/services/*; do
+              if [ -f "$service" ]; then
+                echo "Processing: $(basename $service)"
+                sort -u "$service" -o "$service"
+              fi
+            done
+          fi
+
+      - name: Copy compiled classes
+        run: |
+          echo "=== Copying compiled classes ==="
+          cp -r build/classes/* build/extracted/
+          echo "Classes copied"
+
+      - name: Create final JAR
+        run: |
+          echo "=== Creating final JAR ==="
+          cd build/extracted
+          
           cat > MANIFEST.MF << 'EOF'
           Manifest-Version: 1.0
           Main-Class: Main
-          Created-By: GitHub Actions
           
           EOF
           
-          echo "Building final JAR..."
           jar cmf MANIFEST.MF ../OBLoader1.jar .
           
-          cd ../..
-          
-          ls -lh build/OBLoader1.jar
-          echo "Fat JAR created successfully"
+          cd ..
+          ls -lh OBLoader1.jar
+          echo "JAR size: $(du -h OBLoader1.jar | cut -f1)"
 
       - name: Copy JAR to root
         run: |
           cp build/OBLoader1.jar ./OBLoader1.jar
-          echo "Final JAR size: $(du -h OBLoader1.jar | cut -f1)"
 
       - name: List root directory
         run: ls -la ./
