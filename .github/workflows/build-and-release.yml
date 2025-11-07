@@ -1,10 +1,15 @@
 name: Build and Release
 
 on:
-  push:
-    branches:
-      - master
   workflow_dispatch:
+    inputs:
+      command:
+        description: 'Build command'
+        required: true
+        default: 'build-all'
+        type: choice
+        options:
+          - build-all
 
 jobs:
   build:
@@ -12,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2
 
       - name: Setup Java 21
         uses: actions/setup-java@v4
@@ -61,10 +66,11 @@ jobs:
           
           echo "Fat JAR created successfully!"
 
-      - name: List files
-        run: |
-          ls -lh OBLoader1.jar
-          echo "JAR size: $(du -h OBLoader1.jar | cut -f1)"
+      - name: List root directory
+        run: ls -la ./
+
+      - name: List JAR file
+        run: ls -la ./OBLoader1.jar
 
       - name: Install GitHub CLI
         run: |
@@ -72,22 +78,14 @@ jobs:
           sudo apt-get install -y gh
 
       - name: Authenticate GitHub CLI
-        run: echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
+        run: echo ${{ secrets.GH_TOKEN }} | gh auth login --with-token
 
       - name: Delete existing release if exists
         run: |
-          if gh release view latest_release 2>/dev/null; then
-            echo "Deleting existing release..."
-            gh release delete latest_release -y --cleanup-tag
-          else
-            echo "No existing release to delete"
+          if gh release view latest_release; then
+            gh release delete latest_release -y
           fi
 
       - name: Create Release
         run: |
-          echo "Creating new release..."
-          gh release create latest_release ./OBLoader1.jar \
-            -t "Latest Release - $(date +'%Y-%m-%d %H:%M:%S')" \
-            -n "Автоматически собранный релиз OBLoader1"
-          
-          echo "Release created successfully!"
+          gh release create latest_release ./OBLoader1.jar -t "Release latest_release"
