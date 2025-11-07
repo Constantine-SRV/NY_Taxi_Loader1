@@ -51,6 +51,14 @@ jobs:
           echo "All JARs extracted"
           du -sh .
 
+      - name: Remove signature files
+        run: |
+          echo "=== Removing signature files ==="
+          cd build/extracted/META-INF
+          rm -f *.SF *.RSA *.DSA MSFTSIG.SF MSFTSIG.RSA
+          rm -f MANIFEST.MF
+          echo "Signature files removed"
+
       - name: Merge META-INF services
         run: |
           echo "=== Merging META-INF/services files ==="
