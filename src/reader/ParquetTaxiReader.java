@@ -18,11 +18,20 @@ import java.util.List;
 /**
  * Класс для чтения Parquet файлов с данными NYC Taxi.
  * Single Responsibility: только чтение и парсинг Parquet.
- * Version 2.0: С валидацией и ограничением значений по схеме БД
+ * Version 2.1: С валидацией, ограничением значений и обработкой null-дат
  */
 public class ParquetTaxiReader {
 
     private final Configuration hadoopConfig;
+
+    // Дефолтная дата для записей с null pickup_datetime (для первой записи в файле)
+    private static final LocalDateTime DEFAULT_PICKUP_DATETIME = LocalDateTime.of(2025, 1, 1, 0, 0, 0);
+
+    // Последняя валидная pickup_datetime для fallback (используется если текущая запись = null)
+    private LocalDateTime lastValidPickupDatetime = DEFAULT_PICKUP_DATETIME;
+
+    // Счетчик записей с null pickup_datetime
+    private int nullPickupDatetimeCount = 0;
 
     // Лимиты для TINYINT (0-255) и SMALLINT (0-65535)
     private static final int TINYINT_MAX = 255;
@@ -43,6 +52,10 @@ public class ParquetTaxiReader {
      */
     public List<TaxiTrip> readFile(String filePath, int limit) throws IOException {
         List<TaxiTrip> trips = new ArrayList<>();
+
+        // Сброс счетчика и lastValidPickupDatetime для каждого файла
+        nullPickupDatetimeCount = 0;
+        lastValidPickupDatetime = DEFAULT_PICKUP_DATETIME;
 
         LogService.infof("Reading Parquet file: %s", filePath);
         long startTime = System.currentTimeMillis();
@@ -78,6 +91,12 @@ public class ParquetTaxiReader {
             } else {
                 LogService.infof("✅ Read %,d records", count);
             }
+
+            // Логируем статистику по null pickup_datetime
+            if (nullPickupDatetimeCount > 0) {
+                LogService.infof("⚠️  Fixed %,d records with null pickup_datetime (%.2f%%)",
+                        nullPickupDatetimeCount, (nullPickupDatetimeCount * 100.0) / count);
+            }
         }
 
         return trips;
@@ -92,16 +111,38 @@ public class ParquetTaxiReader {
         // VendorID - TINYINT(4): 0-255
         trip.setVendorId(clampTinyInt(getIntValue(group, "VendorID")));
 
-        // Pickup datetime
+        // Pickup datetime - КРИТИЧЕСКОЕ ПОЛЕ (первичный ключ + партиционирование)
+        LocalDateTime pickupDatetime = null;
         if (hasField(group, "tpep_pickup_datetime")) {
             long micros = getLongValue(group, "tpep_pickup_datetime");
-            trip.setPickupDatetime(microsToLocalDateTime(micros));
+            if (micros != 0) {
+                pickupDatetime = microsToLocalDateTime(micros);
+            }
         }
+
+        // Если pickup_datetime = null, используем lastValidPickupDatetime
+        if (pickupDatetime == null) {
+            pickupDatetime = lastValidPickupDatetime;
+            nullPickupDatetimeCount++;
+        } else {
+            // Сохраняем валидную дату для следующих записей
+            lastValidPickupDatetime = pickupDatetime;
+        }
+
+        trip.setPickupDatetime(pickupDatetime);
 
         // Dropoff datetime
         if (hasField(group, "tpep_dropoff_datetime")) {
             long micros = getLongValue(group, "tpep_dropoff_datetime");
-            trip.setDropoffDatetime(microsToLocalDateTime(micros));
+            if (micros != 0) {
+                trip.setDropoffDatetime(microsToLocalDateTime(micros));
+            } else {
+                // Если dropoff тоже null, делаем его на 10 минут позже pickup
+                trip.setDropoffDatetime(pickupDatetime.plusMinutes(10));
+            }
+        } else {
+            // Если поле отсутствует, делаем dropoff на 10 минут позже pickup
+            trip.setDropoffDatetime(pickupDatetime.plusMinutes(10));
         }
 
         // Passenger count - TINYINT(4): 0-255
@@ -293,14 +334,18 @@ public class ParquetTaxiReader {
 
     /**
      * Конвертирует микросекунды Unix timestamp в LocalDateTime.
+     * Возвращает null если конвертация не удалась или значение некорректное.
      */
     private LocalDateTime microsToLocalDateTime(long micros) {
         try {
+            // Проверка на разумный диапазон (1970-2100)
             long millis = micros / 1000;
+            if (millis < 0 || millis > 4102444800000L) { // 2100-01-01
+                return null;
+            }
             return LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault());
         } catch (Exception e) {
-            // Если конвертация не удалась, вернуть текущую дату
-            return LocalDateTime.now();
+            return null;
         }
     }
 
